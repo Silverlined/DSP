@@ -2,8 +2,12 @@ import numpy as np
 from pylab import plot, show, axis
 from scipy.io import wavfile
 from matplotlib import pyplot as plt
-from os import system
+from os import system, name
 
+if name == "nt":
+    import winsound
+
+input = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]
 
 def getFrequency(note):
     notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
@@ -25,17 +29,31 @@ def getFrequency(note):
 def getNote(freq, duration, amplitude, rate=44100):
     time = np.linspace(0, duration, duration * rate, False)
 
-    note = np.sin(freq * time * 2 * np.pi)
+    note = amplitude * np.sin(freq * time * 2 * np.pi)
 
     # Ensure that highest value is in 16-bit range
     data = note * (2 ** 15 - 1) / np.max(np.abs(note))
     return data.astype(np.int16)
 
+def playScale(scale, interval):
+    for freq in scale:
+        winsound.Beep(int(freq+0.5), interval)
+
+def getHarmonics(freq, duration, n):
+    amplitude = 1
+    note = 0
+    for i in range(n):
+        note += getNote(freq * (i + 1), duration, amplitude, 44100)
+        amplitude = amplitude * 0.6
+    return note
 
 def main():
-    tone = getNote(262, 2, 10000, 44100)
-    wavfile.write("/home/silverlined/Downloads/DSP/sin_test.wav", 44100, tone)
-    system("aplay -f cd /home/silverlined/Downloads/DSP/sin_test.wav")
+    tone = getHarmonics(440, 2, 6)
+    wavfile.write("sin_test.wav", 44100, tone)
+    # wavfile.write("/home/silverlined/Downloads/DSP/sin_test.wav", 44100, tone)
+    # system("aplay -f cd /home/silverlined/Downloads/DSP/sin_test.wav")
+    winsound.PlaySound("sin_test.wav", winsound.SND_ALIAS)
+    playScale(input, 100)
 
 
 if __name__ == "__main__":
