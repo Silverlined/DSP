@@ -13,7 +13,7 @@ def getFrequency(note):
     else:
         octave = note[1]
 
-    keyNumber = notes.index(note[0:1])
+    keyNumber = notes.index(note[0:-1])
     if keyNumber < 3:
         keyNumber = keyNumber + 12 + ((int(octave) - 1) * 12) + 1
     else:
